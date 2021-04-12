@@ -1,13 +1,15 @@
 package com.example.personalcloud;
 
-import com.example.personalcloud.service.FileSystemStorageService;
+import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.service.StorageService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
+@EnableConfigurationProperties(StorageProperties.class)
 public class PersonalCloudApplication {
 
     public static void main(String[] args) {
@@ -15,14 +17,7 @@ public class PersonalCloudApplication {
     }
 
     @Bean
-    StorageService storageService() {
-        return new FileSystemStorageService();
-    }
-
-    @Bean
     CommandLineRunner init(StorageService storageService) {
-        return (args) -> {
-            storageService.init();
-        };
+        return (args) -> storageService.init();
     }
 }
