@@ -2,6 +2,7 @@ package com.example.personalcloud.service;
 
 import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.entity.FileMetadata;
+import com.example.personalcloud.exception.StorageEmptyFileException;
 import com.example.personalcloud.exception.StorageException;
 import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.repository.FilesRepository;
@@ -16,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-//TODO Better error handling
 @Service
 public class FileSystemStorageService implements StorageService {
 
@@ -38,13 +38,12 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    //TODO transaction!
-    // first save info in db, then on the drive
+    //TODO handle duplicate file (right now it updates it on drive and adds new record to db)
     @Override
     public FileUploadResponse store(MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                throw new StorageException("Failed to store empty file: " + file.getOriginalFilename());
+                throw new StorageEmptyFileException("Failed to store empty file: " + file.getOriginalFilename());
             }
 
             Path destinationFile = this.rootUploadLocation.resolve(
@@ -52,7 +51,7 @@ public class FileSystemStorageService implements StorageService {
                     .normalize().toAbsolutePath();
 
             if (!destinationFile.getParent().equals(this.rootUploadLocation.toAbsolutePath())) {
-                throw new StorageException("Cannot store file outside current directory.");
+                throw new StorageException("Cannot store file outside current directory");
             }
 
             try (InputStream inputStream = file.getInputStream()) {
