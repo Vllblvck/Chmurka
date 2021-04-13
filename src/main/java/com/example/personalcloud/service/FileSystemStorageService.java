@@ -1,8 +1,10 @@
 package com.example.personalcloud.service;
 
 import com.example.personalcloud.config.StorageProperties;
+import com.example.personalcloud.entity.FileMetadata;
 import com.example.personalcloud.exception.StorageException;
 import com.example.personalcloud.model.FileUploadResponse;
+import com.example.personalcloud.repository.FilesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,10 +21,12 @@ import java.nio.file.StandardCopyOption;
 public class FileSystemStorageService implements StorageService {
 
     private final Path rootUploadLocation;
+    private final FilesRepository filesRepository;
 
     @Autowired
-    public FileSystemStorageService(StorageProperties storageProperties) {
-        rootUploadLocation = Paths.get(storageProperties.getUploadLocation());
+    public FileSystemStorageService(StorageProperties storageProperties, FilesRepository filesRepository) {
+        this.rootUploadLocation = Paths.get(storageProperties.getUploadLocation());
+        this.filesRepository = filesRepository;
     }
 
     @Override
@@ -34,6 +38,8 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
+    //TODO transaction!
+    // first save info in db, then on the drive
     @Override
     public FileUploadResponse store(MultipartFile file) {
         try {
@@ -45,14 +51,20 @@ public class FileSystemStorageService implements StorageService {
                     Paths.get(file.getOriginalFilename()))
                     .normalize().toAbsolutePath();
 
+            if (!destinationFile.getParent().equals(this.rootUploadLocation.toAbsolutePath())) {
+                throw new StorageException("Cannot store file outside current directory.");
+            }
+
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            //TODO save info to db in order to retrieve actual id
-            long fileId = 0;
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setFileName(file.getOriginalFilename());
+            fileMetadata.setSize(file.getSize());
+            FileMetadata result = filesRepository.save(fileMetadata);
 
-            return new FileUploadResponse(fileId, file.getOriginalFilename(), file.getSize());
+            return new FileUploadResponse(result.getId(), result.getFileName(), result.getSize());
 
         } catch (IOException ex) {
             throw new StorageException("IOException while storing a file: " + file.getOriginalFilename(), ex);
