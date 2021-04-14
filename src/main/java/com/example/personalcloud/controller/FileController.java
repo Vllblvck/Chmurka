@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 //TODO Add logger
-//TODO Add async which should allow for more file uploads at the same time
-// which is probably not needed for the single user use case but whatever xd
 @RestController
 public class FileController {
 
