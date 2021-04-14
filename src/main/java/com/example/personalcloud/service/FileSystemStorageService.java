@@ -2,6 +2,7 @@ package com.example.personalcloud.service;
 
 import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.entity.FileMetadata;
+import com.example.personalcloud.exception.StorageDuplicateFileException;
 import com.example.personalcloud.exception.StorageEmptyFileException;
 import com.example.personalcloud.exception.StorageException;
 import com.example.personalcloud.model.FileUploadResponse;
@@ -38,12 +39,15 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    //TODO handle duplicate file (right now it updates it on drive and adds new record to db)
     @Override
     public FileUploadResponse store(MultipartFile file) {
         try {
             if (file.isEmpty()) {
                 throw new StorageEmptyFileException("Failed to store empty file: " + file.getOriginalFilename());
+            }
+
+            if (filesRepository.findFileMetadataByFileName(file.getOriginalFilename()) != null) {
+                throw new StorageDuplicateFileException("File: " + file.getOriginalFilename() + " already exists");
             }
 
             Path destinationFile = this.rootUploadLocation.resolve(

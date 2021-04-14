@@ -1,5 +1,6 @@
 package com.example.personalcloud.controller;
 
+import com.example.personalcloud.exception.StorageDuplicateFileException;
 import com.example.personalcloud.exception.StorageEmptyFileException;
 import com.example.personalcloud.exception.StorageException;
 import com.example.personalcloud.model.ApiError;
@@ -20,6 +21,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(StorageEmptyFileException.class)
     public ResponseEntity<Object> handleStorageEmptyFile(StorageEmptyFileException ex) {
+        ApiError error = new ApiError(HttpStatus.BAD_REQUEST, ex);
+        return buildResponseEntity(error);
+    }
+
+    @ExceptionHandler(StorageDuplicateFileException.class)
+    public ResponseEntity<Object> handleStorageDuplicateFile(StorageDuplicateFileException ex) {
         ApiError error = new ApiError(HttpStatus.BAD_REQUEST, ex);
         return buildResponseEntity(error);
     }
