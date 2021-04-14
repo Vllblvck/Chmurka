@@ -1,9 +1,14 @@
 package com.example.personalcloud.entity;
 
+import com.sun.istack.NotNull;
+
 import javax.persistence.*;
 
+
 @Entity
-@Table(name = "file_metadata")
+@Table(name = "file_metadata", indexes = {
+        @Index(columnList = "file_name", name = "file_name_idx")
+})
 public class FileMetadata {
 
     @Id
@@ -11,9 +16,11 @@ public class FileMetadata {
     private long id;
 
     @Column(name = "file_name")
+    @NotNull
     private String fileName;
 
     @Column(name = "size")
+    @NotNull
     private long size;
 
     public long getId() {
