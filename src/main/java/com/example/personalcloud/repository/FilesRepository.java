@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FilesRepository extends CrudRepository<FileMetadata, Long> {
+    FileMetadata findFileMetadataByFileName(String fileName);
 }
