@@ -5,6 +5,7 @@ import com.example.personalcloud.entity.FileMetadata;
 import com.example.personalcloud.exception.StorageDuplicateFileException;
 import com.example.personalcloud.exception.StorageEmptyFileException;
 import com.example.personalcloud.exception.StorageException;
+import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.repository.FilesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class FileSystemStorageService implements StorageService {
@@ -72,5 +75,18 @@ public class FileSystemStorageService implements StorageService {
         } catch (IOException ex) {
             throw new StorageException("IOException while storing a file: " + file.getOriginalFilename(), ex);
         }
+    }
+
+    @Override
+    public List<FileMetadataResponse> getFilesMetadata() {
+        List<FileMetadataResponse> fileMetadataResponseList = new ArrayList<>();
+
+        for (FileMetadata fileMetadata : filesRepository.findAll()) {
+            FileMetadataResponse fileMetadataResponse = new FileMetadataResponse(fileMetadata.getId(),
+                    fileMetadata.getFileName(), fileMetadata.getSize());
+            fileMetadataResponseList.add(fileMetadataResponse);
+        }
+
+        return fileMetadataResponseList;
     }
 }
