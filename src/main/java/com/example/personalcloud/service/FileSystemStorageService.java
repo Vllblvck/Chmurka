@@ -14,10 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,10 +49,6 @@ public class FileSystemStorageService implements StorageService {
                 throw new StorageEmptyFileException("Failed to store empty file: " + file.getOriginalFilename());
             }
 
-            if (filesRepository.findFileMetadataByFileName(file.getOriginalFilename()) != null) {
-                throw new StorageDuplicateFileException("File: " + file.getOriginalFilename() + " already exists");
-            }
-
             Path destinationFile = this.rootUploadLocation.resolve(
                     Paths.get(file.getOriginalFilename()))
                     .normalize().toAbsolutePath();
@@ -62,7 +58,7 @@ public class FileSystemStorageService implements StorageService {
             }
 
             try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(inputStream, destinationFile);
             }
 
             FileMetadata fileMetadata = new FileMetadata();
@@ -72,6 +68,8 @@ public class FileSystemStorageService implements StorageService {
 
             return new FileUploadResponse(result.getId(), result.getFileName(), result.getSize());
 
+        } catch (FileAlreadyExistsException ex) {
+            throw new StorageDuplicateFileException("File: " + file.getOriginalFilename() + " already exists", ex);
         } catch (IOException ex) {
             throw new StorageException("IOException while storing a file: " + file.getOriginalFilename(), ex);
         }
