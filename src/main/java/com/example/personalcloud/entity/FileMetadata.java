@@ -23,6 +23,10 @@ public class FileMetadata {
     @NotNull
     private long size;
 
+    @Column(name = "path")
+    @NotNull
+    private String path;
+
     public long getId() {
         return id;
     }
@@ -45,5 +49,13 @@ public class FileMetadata {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 }

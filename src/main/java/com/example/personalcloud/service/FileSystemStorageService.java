@@ -3,6 +3,7 @@ package com.example.personalcloud.service;
 import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.entity.FileMetadata;
 import com.example.personalcloud.exception.StorageException;
+import com.example.personalcloud.exception.StorageFileNotFoundException;
 import com.example.personalcloud.exception.StorageNoFilesUploadedException;
 import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
@@ -11,8 +12,8 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FileSystemStorageService implements StorageService {
@@ -68,12 +70,13 @@ public class FileSystemStorageService implements StorageService {
                     Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
                 }
 
-                FileMetadata savedMetadata = filesRepository.getFileMetadataByFileName(fileItem.getName());
-                if (savedMetadata != null) {
+                Optional<FileMetadata> savedMetadata = filesRepository.findFileMetadataByFileName(fileItem.getName());
+                if (savedMetadata.isPresent()) {
+                    FileMetadata fileMetadata = savedMetadata.get();
                     return new FileUploadResponse(
-                            savedMetadata.getId(),
-                            savedMetadata.getFileName(),
-                            savedMetadata.getSize()
+                            fileMetadata.getId(),
+                            fileMetadata.getFileName(),
+                            fileMetadata.getSize()
                     );
                 }
 
@@ -81,6 +84,7 @@ public class FileSystemStorageService implements StorageService {
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setFileName(uploadedFile.getName());
                 fileMetadata.setSize(uploadedFile.length());
+                fileMetadata.setPath(destinationFile.toString());
                 FileMetadata result = filesRepository.save(fileMetadata);
 
                 return new FileUploadResponse(
@@ -116,10 +120,21 @@ public class FileSystemStorageService implements StorageService {
         return fileMetadataResponseList;
     }
 
-    //TODO Find best way to download large files
     //TODO Allow multiple files download? (maybe let frontend handle that?)
     @Override
-    public Resource download(long fileId) {
-        return null;
+    public StreamingResponseBody download(long fileId) {
+
+        return outputStream -> {
+            Optional<FileMetadata> fileMetadata = filesRepository.findById(fileId);
+
+            if (!fileMetadata.isPresent()) {
+                throw new StorageFileNotFoundException("No file with id: " + fileId);
+            }
+
+            String pathString = fileMetadata.get().getPath();
+            Path path = Paths.get(pathString);
+
+            Files.copy(path, outputStream);
+        };
     }
 }

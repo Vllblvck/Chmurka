@@ -3,7 +3,7 @@ package com.example.personalcloud.service;
 import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
 import org.apache.commons.fileupload.FileItemIterator;
-import org.springframework.core.io.Resource;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.List;
 
@@ -15,5 +15,5 @@ public interface StorageService {
 
     List<FileMetadataResponse> getFilesMetadata();
 
-    Resource download(long fileId);
+    StreamingResponseBody download(long fileId);
 }

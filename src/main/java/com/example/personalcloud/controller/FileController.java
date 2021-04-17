@@ -4,18 +4,19 @@ import com.example.personalcloud.config.Routes;
 import com.example.personalcloud.exception.StorageException;
 import com.example.personalcloud.exception.StorageNotMultipartException;
 import com.example.personalcloud.model.FileMetadataResponse;
+import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.service.StorageService;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class FileController {
     }
 
     @PostMapping(Routes.UPLOAD_FILE)
-    public ResponseEntity<Object> uploadFile(HttpServletRequest request) {
+    public ResponseEntity<FileUploadResponse> uploadFile(HttpServletRequest request) {
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);
 
         if (!isMultipart) {
@@ -55,7 +56,8 @@ public class FileController {
         return new ResponseEntity<>(storageService.getFilesMetadata(), HttpStatus.OK);
     }
 
-    public ResponseEntity<Resource> downloadFile(@PathVariable long fileId) {
+    @GetMapping(Routes.DOWNLOAD_FILE)
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable long fileId) {
         return new ResponseEntity<>(storageService.download(fileId), HttpStatus.OK);
     }
 }

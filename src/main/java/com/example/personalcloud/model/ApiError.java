@@ -10,13 +10,11 @@ public class ApiError {
     private LocalDateTime timestamp;
     private HttpStatus status;
     private String message;
-    private Throwable cause;
 
-    public ApiError(HttpStatus status, Throwable ex) {
+    public ApiError(HttpStatus status, Exception ex) {
         this.timestamp = LocalDateTime.now();
         this.status = status;
         this.message = ex.getMessage();
-        this.cause = ex.getCause();
     }
 
     public LocalDateTime getTimestamp() {
