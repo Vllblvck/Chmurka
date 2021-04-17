@@ -1,7 +1,7 @@
 package com.example.personalcloud.controller;
 
-import com.example.personalcloud.exception.StorageDuplicateFileException;
 import com.example.personalcloud.exception.StorageException;
+import com.example.personalcloud.exception.StorageNoFilesUploadedException;
 import com.example.personalcloud.exception.StorageNotMultipartException;
 import com.example.personalcloud.model.ApiError;
 import org.springframework.http.HttpStatus;
@@ -20,8 +20,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-            StorageDuplicateFileException.class,
-            StorageNotMultipartException.class
+            StorageNotMultipartException.class,
+            StorageNoFilesUploadedException.class
     })
     public ResponseEntity<Object> handleStorageBadRequestExceptions(StorageException ex) {
         ApiError error = new ApiError(HttpStatus.BAD_REQUEST, ex);

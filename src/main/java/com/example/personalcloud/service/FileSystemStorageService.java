@@ -2,8 +2,8 @@ package com.example.personalcloud.service;
 
 import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.entity.FileMetadata;
-import com.example.personalcloud.exception.StorageDuplicateFileException;
 import com.example.personalcloud.exception.StorageException;
+import com.example.personalcloud.exception.StorageNoFilesUploadedException;
 import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.repository.FilesRepository;
@@ -14,12 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,10 +45,9 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    //TODO finish implementation
-    // Don't allow multiple files uploads (easier error handling and client can send request one after another so whatever)
     @Override
     public FileUploadResponse store(FileItemIterator fileItemIterator) {
+        Path destinationFile = null;
 
         try {
             while (fileItemIterator.hasNext()) {
@@ -57,7 +57,7 @@ public class FileSystemStorageService implements StorageService {
                     continue;
                 }
 
-                Path destinationFile = this.rootUploadLocation.resolve(Paths.get(fileItem.getName()))
+                destinationFile = this.rootUploadLocation.resolve(Paths.get(fileItem.getName()))
                         .normalize().toAbsolutePath();
 
                 if (!destinationFile.getParent().equals(this.rootUploadLocation.toAbsolutePath())) {
@@ -65,21 +65,40 @@ public class FileSystemStorageService implements StorageService {
                 }
 
                 try (InputStream inputStream = fileItem.openStream()) {
-                    Files.copy(inputStream, destinationFile);
+                    Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
                 }
 
-               /* FileMetadata fileMetadata = new FileMetadata();
-                fileMetadata.setFileName(file.getOriginalFilename());
-                fileMetadata.setSize(file.getSize());
-                FileMetadata result = filesRepository.save(fileMetadata);*/
+                FileMetadata savedMetadata = filesRepository.getFileMetadataByFileName(fileItem.getName());
+                if (savedMetadata != null) {
+                    return new FileUploadResponse(
+                            savedMetadata.getId(),
+                            savedMetadata.getFileName(),
+                            savedMetadata.getSize()
+                    );
+                }
+
+                File uploadedFile = destinationFile.toFile();
+                FileMetadata fileMetadata = new FileMetadata();
+                fileMetadata.setFileName(uploadedFile.getName());
+                fileMetadata.setSize(uploadedFile.length());
+                FileMetadata result = filesRepository.save(fileMetadata);
+
+                return new FileUploadResponse(
+                        result.getId(),
+                        result.getFileName(),
+                        result.getSize()
+                );
             }
 
-            return new FileUploadResponse(0, "askjfhaskjhf", 0);
+            throw new StorageNoFilesUploadedException("No files in request");
 
-        } catch (FileAlreadyExistsException ex) {
-            throw new StorageDuplicateFileException("File already exists");
         } catch (FileUploadException | IOException ex) {
-            ex.printStackTrace();
+
+            if (destinationFile != null) {
+                File partlyUploadedFile = destinationFile.toFile();
+                partlyUploadedFile.delete();
+            }
+
             throw new StorageException("Exception while storing file", ex);
         }
     }
