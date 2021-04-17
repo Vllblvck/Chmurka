@@ -1,8 +1,8 @@
 package com.example.personalcloud.controller;
 
-import com.example.personalcloud.exception.StorageDuplicateFileException;
-import com.example.personalcloud.exception.StorageEmptyFileException;
 import com.example.personalcloud.exception.StorageException;
+import com.example.personalcloud.exception.StorageNoFilesUploadedException;
+import com.example.personalcloud.exception.StorageNotMultipartException;
 import com.example.personalcloud.model.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +21,11 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(error);
     }
 
-    @ExceptionHandler(StorageEmptyFileException.class)
-    public ResponseEntity<Object> handleStorageEmptyFile(StorageEmptyFileException ex) {
-        ApiError error = new ApiError(HttpStatus.BAD_REQUEST, ex);
-        return buildResponseEntity(error);
-    }
-
-    @ExceptionHandler(StorageDuplicateFileException.class)
-    public ResponseEntity<Object> handleStorageDuplicateFile(StorageDuplicateFileException ex) {
+    @ExceptionHandler({
+            StorageNotMultipartException.class,
+            StorageNoFilesUploadedException.class
+    })
+    public ResponseEntity<Object> handleStorageBadRequestExceptions(StorageException ex) {
         ApiError error = new ApiError(HttpStatus.BAD_REQUEST, ex);
         return buildResponseEntity(error);
     }
