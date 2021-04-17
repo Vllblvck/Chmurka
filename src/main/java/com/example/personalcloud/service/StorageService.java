@@ -16,4 +16,6 @@ public interface StorageService {
     List<FileMetadataResponse> getFilesMetadata();
 
     StreamingResponseBody download(long fileId);
+
+    void delete(long fileId);
 }

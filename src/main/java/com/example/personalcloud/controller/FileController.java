@@ -12,10 +12,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -59,5 +56,11 @@ public class FileController {
     @GetMapping(Routes.DOWNLOAD_FILE)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable long fileId) {
         return new ResponseEntity<>(storageService.download(fileId), HttpStatus.OK);
+    }
+
+    @DeleteMapping(Routes.DELETE_FILE)
+    public ResponseEntity deleteFile(@PathVariable long fileId) {
+        storageService.delete(fileId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

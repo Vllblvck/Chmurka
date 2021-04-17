@@ -120,7 +120,7 @@ public class FileSystemStorageService implements StorageService {
         return fileMetadataResponseList;
     }
 
-    //TODO Allow multiple files download? (maybe let frontend handle that?)
+    //TODO Allow multiple files download? (with zip archive)
     @Override
     public StreamingResponseBody download(long fileId) {
 
@@ -136,5 +136,23 @@ public class FileSystemStorageService implements StorageService {
 
             Files.copy(path, outputStream);
         };
+    }
+
+    @Override
+    public void delete(long fileId) {
+        Optional<FileMetadata> fileMetadata = filesRepository.findById(fileId);
+
+        if (!fileMetadata.isPresent()) {
+            throw new StorageFileNotFoundException("No file with id: " + fileId);
+        }
+
+        String path = fileMetadata.get().getPath();
+        boolean result = new File(path).delete();
+
+        if (!result) {
+            throw new StorageException("Failed to delete file with id: " + fileId);
+        }
+
+        filesRepository.deleteById(fileId);
     }
 }
