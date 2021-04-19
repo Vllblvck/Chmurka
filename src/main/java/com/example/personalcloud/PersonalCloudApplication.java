@@ -1,5 +1,6 @@
 package com.example.personalcloud;
 
+import com.example.personalcloud.config.Routes;
 import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.service.StorageService;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -17,6 +18,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.async.CallableProcessingInterceptor;
 import org.springframework.web.context.request.async.TimeoutCallableProcessingInterceptor;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.concurrent.Callable;
@@ -51,7 +53,7 @@ public class PersonalCloudApplication implements AsyncConfigurer {
     }
 
     @Bean
-    public WebMvcConfigurer webMvcConfigurerConfigurer(
+    public WebMvcConfigurer webMvcConfigurer(
             AsyncTaskExecutor taskExecutor,
             CallableProcessingInterceptor callableProcessingInterceptor) {
 
@@ -61,6 +63,11 @@ public class PersonalCloudApplication implements AsyncConfigurer {
                 configurer.setDefaultTimeout(360000).setTaskExecutor(taskExecutor);
                 configurer.registerCallableInterceptors(callableProcessingInterceptor);
                 WebMvcConfigurer.super.configureAsyncSupport(configurer);
+            }
+
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping(Routes.UPLOAD_FILE).allowedOrigins("http://localhost:8080");
             }
         };
     }
