@@ -8,16 +8,22 @@ import com.example.personalcloud.exception.StorageNoFilesUploadedException;
 import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.repository.FilesRepository;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,18 +54,29 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public FileUploadResponse store(FileItemIterator fileItemIterator) {
+    public FileUploadResponse store(HttpServletRequest request) {
         Path destinationFile = null;
 
         try {
+            FileItemIterator fileItemIterator = new ServletFileUpload().getItemIterator(request);
+
             while (fileItemIterator.hasNext()) {
+                String directory = "";
                 FileItemStream fileItem = fileItemIterator.next();
 
-                if (fileItem.isFormField()) {
+                if (fileItem.isFormField() && fileItem.getFieldName().equals("directory")) {
+                    try (InputStream inputStream = fileItem.openStream()) {
+                        StringWriter writer = new StringWriter();
+                        String encoding = StandardCharsets.UTF_8.name();
+                        IOUtils.copy(inputStream, writer, encoding);
+                        directory = writer.toString();
+                    }
+
                     continue;
                 }
 
-                destinationFile = this.rootUploadLocation.resolve(
+                Path targetDir = this.rootUploadLocation.resolve(directory).normalize();
+                destinationFile = targetDir.resolve(
                         Paths.get(fileItem.getName())).normalize().toAbsolutePath();
 
                 if (!destinationFile.getParent().equals(this.rootUploadLocation.toAbsolutePath())) {
