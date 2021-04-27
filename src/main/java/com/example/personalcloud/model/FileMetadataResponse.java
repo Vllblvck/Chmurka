@@ -2,11 +2,13 @@ package com.example.personalcloud.model;
 
 public class FileMetadataResponse {
     private long id;
+    private Long parentId;
     private String fileName;
     private long size;
 
-    public FileMetadataResponse(long id, String fileName, long size) {
+    public FileMetadataResponse(long id, Long parentId, String fileName, long size) {
         this.id = id;
+        this.parentId = parentId;
         this.fileName = fileName;
         this.size = size;
     }
@@ -17,6 +19,14 @@ public class FileMetadataResponse {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 
     public String getFileName() {

@@ -1,22 +1,16 @@
 package com.example.personalcloud.controller;
 
 import com.example.personalcloud.config.Routes;
-import com.example.personalcloud.exception.StorageException;
-import com.example.personalcloud.exception.StorageNotMultipartException;
 import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.service.StorageService;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
 
 //TODO Add logger
@@ -31,36 +25,29 @@ public class FileController {
     }
 
     @PostMapping(Routes.UPLOAD_FILE)
-    public ResponseEntity<FileUploadResponse> uploadFile(HttpServletRequest request) {
-        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+    public ResponseEntity<FileUploadResponse> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(name = "parentId", required = false) Long parentId) {
 
-        if (!isMultipart) {
-            throw new StorageNotMultipartException("Request is not a multipart/form-data");
-        }
-
-        FileItemIterator fileItemIterator;
-        try {
-            fileItemIterator = new ServletFileUpload().getItemIterator(request);
-        } catch (FileUploadException | IOException ex) {
-            throw new StorageException("Exception while getting file iterator from request", ex);
-        }
-
-        return new ResponseEntity<>(storageService.store(fileItemIterator), HttpStatus.CREATED);
+        FileUploadResponse response = this.storageService.store(file, parentId);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping(Routes.FILES_METADATA)
     public ResponseEntity<List<FileMetadataResponse>> getFilesMetadata() {
-        return new ResponseEntity<>(storageService.getFilesMetadata(), HttpStatus.OK);
+        List<FileMetadataResponse> response = this.storageService.getFilesMetadata();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping(Routes.DOWNLOAD_FILE)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable long fileId) {
-        return new ResponseEntity<>(storageService.download(fileId), HttpStatus.OK);
+        StreamingResponseBody responseBody = this.storageService.download(fileId);
+        return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
     @DeleteMapping(Routes.DELETE_FILE)
     public ResponseEntity deleteFile(@PathVariable long fileId) {
-        storageService.delete(fileId);
+        this.storageService.delete(fileId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

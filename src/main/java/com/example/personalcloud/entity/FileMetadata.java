@@ -6,9 +6,7 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name = "file_metadata", indexes = {
-        @Index(columnList = "file_name", name = "file_name_idx")
-})
+@Table(name = "file_metadata")
 public class FileMetadata {
 
     @Id
@@ -23,15 +21,16 @@ public class FileMetadata {
     @NotNull
     private long size;
 
-    @Column(name = "path")
-    @NotNull
-    private String path;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private DirectoryMetadata parent;
+
+    //TODO Add userId
 
     public long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -47,15 +46,19 @@ public class FileMetadata {
         return size;
     }
 
-    public void setSize(Long size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
-    public String getPath() {
-        return path;
+    public DirectoryMetadata getParent() {
+        return parent;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setParent(DirectoryMetadata parent) {
+        this.parent = parent;
+    }
+
+    public Long getParentId() {
+        return this.parent == null ? null : this.parent.getId();
     }
 }

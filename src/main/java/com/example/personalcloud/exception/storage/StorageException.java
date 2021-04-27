@@ -1,4 +1,4 @@
-package com.example.personalcloud.exception;
+package com.example.personalcloud.exception.storage;
 
 public class StorageException extends RuntimeException {
 

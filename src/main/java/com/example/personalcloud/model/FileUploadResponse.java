@@ -2,11 +2,13 @@ package com.example.personalcloud.model;
 
 public class FileUploadResponse {
     private long id;
+    private Long parentId;
     private String fileName;
     private long size;
 
-    public FileUploadResponse(long id, String fileName, long size) {
+    public FileUploadResponse(long id, Long parentId, String fileName, long size) {
         this.id = id;
+        this.parentId = parentId;
         this.fileName = fileName;
         this.size = size;
     }
@@ -17,6 +19,14 @@ public class FileUploadResponse {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 
     public String getFileName() {
