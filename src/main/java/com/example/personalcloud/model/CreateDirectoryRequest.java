@@ -1,10 +1,11 @@
 package com.example.personalcloud.model;
 
+
 public class CreateDirectoryRequest {
     private String dirName;
-    private Long parentId;
+    private long parentId;
 
-    public CreateDirectoryRequest(String dirName, Long parentId) {
+    public CreateDirectoryRequest(String dirName, long parentId) {
         this.dirName = dirName;
         this.parentId = parentId;
     }
@@ -17,11 +18,11 @@ public class CreateDirectoryRequest {
         this.dirName = dirName;
     }
 
-    public Long getParentId() {
+    public long getParentId() {
         return parentId;
     }
 
-    public void setParentId(Long parentId) {
+    public void setParentId(long parentId) {
         this.parentId = parentId;
     }
 }

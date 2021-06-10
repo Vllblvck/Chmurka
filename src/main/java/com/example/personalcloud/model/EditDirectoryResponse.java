@@ -1,11 +1,11 @@
 package com.example.personalcloud.model;
 
-public class CreateDirectoryResponse {
+public class EditDirectoryResponse {
     private long id;
     private String dirName;
     private long parentId;
 
-    public CreateDirectoryResponse(long id, String dirName, Long parentId) {
+    public EditDirectoryResponse(long id, String dirName, long parentId) {
         this.id = id;
         this.dirName = dirName;
         this.parentId = parentId;

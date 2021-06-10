@@ -1,14 +1,13 @@
 package com.example.personalcloud.model;
 
-public class CreateDirectoryResponse {
+public class EditDirectoryRequest {
+
     private long id;
     private String dirName;
-    private long parentId;
 
-    public CreateDirectoryResponse(long id, String dirName, Long parentId) {
+    public EditDirectoryRequest(long id, String dirName) {
         this.id = id;
         this.dirName = dirName;
-        this.parentId = parentId;
     }
 
     public long getId() {
@@ -25,13 +24,5 @@ public class CreateDirectoryResponse {
 
     public void setDirName(String dirName) {
         this.dirName = dirName;
-    }
-
-    public long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(long parentId) {
-        this.parentId = parentId;
     }
 }

@@ -21,10 +21,8 @@ public class FileMetadata {
     @NotNull
     private long size;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private DirectoryMetadata parent;
-
-    //TODO Add userId
 
     public long getId() {
         return id;
@@ -58,7 +56,7 @@ public class FileMetadata {
         this.parent = parent;
     }
 
-    public Long getParentId() {
-        return this.parent == null ? null : this.parent.getId();
+    public long getParentId() {
+        return this.parent == null ? 0 : this.parent.getId();
     }
 }

@@ -27,12 +27,13 @@ public class FileController {
     @PostMapping(Routes.UPLOAD_FILE)
     public ResponseEntity<FileUploadResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(name = "parentId", required = false) Long parentId) {
+            @RequestParam("parentId") long parentId) {
 
         FileUploadResponse response = this.storageService.store(file, parentId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    //TODO Add directory id (0 = main)
     @GetMapping(Routes.FILES_METADATA)
     public ResponseEntity<List<FileMetadataResponse>> getFilesMetadata() {
         List<FileMetadataResponse> response = this.storageService.getFilesMetadata();
@@ -45,6 +46,7 @@ public class FileController {
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
+    //FIXME wrong response (204 even when file is not really deleted because it does not exist)
     @DeleteMapping(Routes.DELETE_FILE)
     public ResponseEntity deleteFile(@PathVariable long fileId) {
         this.storageService.delete(fileId);

@@ -1,6 +1,4 @@
-package com.example.personalcloud.exception.storage;
-
-import com.example.personalcloud.exception.storage.StorageException;
+package com.example.personalcloud.exception;
 
 public class StorageFileNotFoundException extends StorageException {
     public StorageFileNotFoundException(String msg) {

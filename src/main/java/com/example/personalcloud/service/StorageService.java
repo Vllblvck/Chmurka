@@ -11,7 +11,7 @@ public interface StorageService {
 
     void init();
 
-    FileUploadResponse store(MultipartFile file, Long parentId);
+    FileUploadResponse store(MultipartFile file, long parentId);
 
     List<FileMetadataResponse> getFilesMetadata();
 

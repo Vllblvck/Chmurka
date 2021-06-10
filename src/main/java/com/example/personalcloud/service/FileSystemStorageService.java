@@ -3,10 +3,10 @@ package com.example.personalcloud.service;
 import com.example.personalcloud.config.StorageProperties;
 import com.example.personalcloud.entity.DirectoryMetadata;
 import com.example.personalcloud.entity.FileMetadata;
-import com.example.personalcloud.exception.storage.StorageDirectoryNotFoundException;
-import com.example.personalcloud.exception.storage.StorageEmptyFileException;
-import com.example.personalcloud.exception.storage.StorageException;
-import com.example.personalcloud.exception.storage.StorageFileNotFoundException;
+import com.example.personalcloud.exception.StorageDirectoryNotFoundException;
+import com.example.personalcloud.exception.StorageEmptyFileException;
+import com.example.personalcloud.exception.StorageException;
+import com.example.personalcloud.exception.StorageFileNotFoundException;
 import com.example.personalcloud.model.FileMetadataResponse;
 import com.example.personalcloud.model.FileUploadResponse;
 import com.example.personalcloud.repository.DirectoriesRepository;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//TODO refactor error handling to use ResponseStatusException
 @Service
 public class FileSystemStorageService implements StorageService {
 
@@ -53,12 +54,11 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    //TODO add users support
+    //TODO provide filetype validation
     @Override
-    public FileUploadResponse store(MultipartFile file, Long parentId) {
+    public FileUploadResponse store(MultipartFile file, long parentId) {
 
         try {
-
             if (file.isEmpty()) {
                 throw new StorageEmptyFileException("Failed to store empty file");
             }
@@ -67,14 +67,14 @@ public class FileSystemStorageService implements StorageService {
             fileMetadata.setFileName(file.getOriginalFilename());
             fileMetadata.setSize(file.getSize());
 
-            if (parentId != null) {
-                Optional<DirectoryMetadata> directoryMetadata = directoriesRepository.findById(parentId);
+            if (parentId != 0) {
+                Optional<DirectoryMetadata> parentDirectoryMetadata = directoriesRepository.findById(parentId);
 
-                if (!directoryMetadata.isPresent()) {
+                if (!parentDirectoryMetadata.isPresent()) {
                     throw new StorageDirectoryNotFoundException("No directory with id: " + parentId);
                 }
 
-                fileMetadata.setParent(directoryMetadata.get());
+                fileMetadata.setParent(parentDirectoryMetadata.get());
             }
 
             FileMetadata result = filesRepository.save(fileMetadata);
@@ -119,7 +119,6 @@ public class FileSystemStorageService implements StorageService {
         return fileMetadataResponseList;
     }
 
-    //TODO Allow multiple files download? (with zip archive)
     @Override
     public StreamingResponseBody download(long fileId) {
 
@@ -138,6 +137,7 @@ public class FileSystemStorageService implements StorageService {
         };
     }
 
+    //TODO Implement
     @Override
     public void delete(long fileId) {
 /*

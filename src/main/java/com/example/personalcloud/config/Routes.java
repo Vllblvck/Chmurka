@@ -7,4 +7,6 @@ public class Routes {
     public static final String DELETE_FILE = "/api/files/{fileId}";
 
     public static final String CREATE_DIRECTORY = "/api/directories";
+    public static final String DELETE_DIRECTORY = "/api/directories/{directoryId}";
+    public static final String EDIT_DIRECTORY = "/api/directories";
 }

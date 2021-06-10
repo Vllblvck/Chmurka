@@ -27,8 +27,6 @@ public class DirectoryMetadata {
     @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<DirectoryMetadata> children;
 
-    //TODO add user id
-
     public long getId() {
         return id;
     }
@@ -67,5 +65,9 @@ public class DirectoryMetadata {
 
     public void setChildren(List<DirectoryMetadata> children) {
         this.children = children;
+    }
+
+    public long getParentId() {
+        return this.parent == null ? 0 : this.parent.getId();
     }
 }
